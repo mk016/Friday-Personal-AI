@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friday AI Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 3rem;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .voice-animation {
+            width: 120px;
+            height: 120px;
+            margin: 2rem auto;
+            position: relative;
+            display: none;
+        }
+
+        .voice-animation.active {
+            display: block;
+        }
+
+        .voice-circle {
+            width: 100%;
+            height: 100%;
+            border: 3px solid #4ecdc4;
+            border-radius: 50%;
+            position: absolute;
+            animation: pulse 2s infinite;
+        }
+
+        .voice-circle:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+
+        .voice-circle:nth-child(3) {
+            animation-delay: 1s;
+        }
+
+        .voice-circle:nth-child(4) {
+            animation-delay: 1.5s;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.8);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        .mic-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            color: #4ecdc4;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-start {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4);
+        }
+
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(78, 205, 196, 0.6);
+        }
+
+        .btn-start:active {
+            transform: translateY(0);
+        }
+
+        .btn-mute {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-mute:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+        }
+
+        .btn-mute:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            margin-top: 1rem;
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+
+        .loading {
+            display: none;
+            margin-top: 1rem;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            color: #ff6b6b;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .success {
+            color: #4ecdc4;
+            margin-top: 1rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">Friday AI</h1>
+        <p class="subtitle">Your Personal AI Assistant</p>
+        
+        <div class="voice-animation" id="voiceAnimation">
+            <div class="voice-circle"></div>
+            <div class="voice-circle"></div>
+            <div class="voice-circle"></div>
+            <div class="voice-circle"></div>
+            <div class="mic-icon">🎤</div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-start" id="startBtn">Start Assistant</button>
+            <button class="btn btn-mute" id="muteBtn" disabled>Mute</button>
+        </div>
+
+        <div class="status" id="status">Ready to start</div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Starting Friday AI...</p>
+        </div>
+
+        <div class="error" id="error"></div>
+        <div class="success" id="success"></div>
+    </div>
+
+    <script>
+        const startBtn = document.getElementById('startBtn');
+        const muteBtn = document.getElementById('muteBtn');
+        const voiceAnimation = document.getElementById('voiceAnimation');
+        const status = document.getElementById('status');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const success = document.getElementById('success');
+
+        let isRunning = false;
+        let isMuted = false;
+
+        startBtn.addEventListener('click', async () => {
+            if (isRunning) return;
+
+            try {
+                // Show loading
+                loading.classList.add('active');
+                status.textContent = 'Starting Friday AI...';
+                startBtn.disabled = true;
+                error.style.display = 'none';
+                success.style.display = 'none';
+
+                // Start voice animation
+                voiceAnimation.classList.add('active');
+
+                // Simulate starting the agent (you'll need to implement the actual backend call)
+                await startAgent();
+
+                // Update UI
+                isRunning = true;
+                startBtn.textContent = 'Stop Assistant';
+                startBtn.classList.remove('btn-start');
+                startBtn.classList.add('btn-mute');
+                muteBtn.disabled = false;
+                status.textContent = 'Friday AI is running...';
+                success.style.display = 'block';
+                success.textContent = 'Assistant started successfully!';
+
+            } catch (err) {
+                console.error('Error starting agent:', err);
+                error.style.display = 'block';
+                error.textContent = 'Failed to start assistant. Please try again.';
+                voiceAnimation.classList.remove('active');
+                startBtn.disabled = false;
+            } finally {
+                loading.classList.remove('active');
+            }
+        });
+
+        muteBtn.addEventListener('click', () => {
+            isMuted = !isMuted;
+            muteBtn.textContent = isMuted ? 'Unmute' : 'Mute';
+            status.textContent = isMuted ? 'Assistant muted' : 'Assistant active';
+            
+            if (isMuted) {
+                voiceAnimation.classList.remove('active');
+            } else {
+                voiceAnimation.classList.add('active');
+            }
+        });
+
+        async function startAgent() {
+            // This is where you'll make the actual call to your Python backend
+            // For now, we'll simulate the process
+            
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    // Simulate successful start
+                    resolve();
+                }, 2000);
+            });
+        }
+
+        // Add some interactive effects
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add hover effect to container
+            const container = document.querySelector('.container');
+            container.addEventListener('mouseenter', () => {
+                container.style.transform = 'scale(1.02)';
+            });
+            container.addEventListener('mouseleave', () => {
+                container.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body>
+</html> 
